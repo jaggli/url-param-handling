@@ -1,7 +1,6 @@
-import { parseUrl } from 'next/dist/shared/lib/router/utils/parse-url';
-import { useRouter } from 'next/router';
-import { useCallback } from 'react';
-import { NonNullableUrlParams, getUrlParams } from './urlParams';
+import { useRouter } from "next/router";
+import { useCallback } from "react";
+import { NonNullableUrlParams, diffParams, getUrlParams } from "./urlParams";
 
 export type UpdateRouterOptions = {
   /** If true, rerun getStaticProps, getServerSideProps or getInitialProps. Default: false */
@@ -9,13 +8,14 @@ export type UpdateRouterOptions = {
   /** Prevent scrolling to the top of the page after navigation. Default: false*/
   noScroll?: boolean;
 };
-export type UpdateRouter = (
-  routerMethod: 'push' | 'replace',
+
+type UpdateRouterInternal = (
+  routerMethod: "push" | "replace",
   params: NonNullableUrlParams,
   options?: UpdateRouterOptions
 ) => Promise<boolean>;
 
-export type UpdateRouterExplicit = (
+export type UpdateRouter = (
   params: NonNullableUrlParams,
   options?: UpdateRouterOptions
 ) => Promise<boolean>;
@@ -23,40 +23,33 @@ export type UpdateRouterExplicit = (
 export const useUpdateRouterParams = () => {
   const router = useRouter();
 
-  const updateRouterParam = useCallback<UpdateRouter>(
+  const updateRouterParam = useCallback<UpdateRouterInternal>(
     (routerMethod, params, options = {}) => {
-      const routerParams = getUrlParams(router.asPath);
+      const currentParams = getUrlParams(router.asPath);
 
-      const queryString = stringify(
-        {
-          ...query,
-          ...params,
-        },
-        { skipNull: true }
-      );
+      // if there is no difference between the current params and the new params
+      // we don't need to update the router
+      if (!diffParams(currentParams, params)) {
+        return Promise.resolve(false);
+      }
 
-      return router[routerMethod](
-        {
-          query: '',
-        },
-        undefined,
-        {
-          shallow: !options.nonShallow,
-          scroll: !options.noScroll,
-        }
-      );
+      // execute the router method with the new params
+      return router[routerMethod]({ query: params }, undefined, {
+        shallow: !options.nonShallow,
+        scroll: !options.noScroll,
+      });
     },
     [router]
   );
 
-  const replaceRouteParams = useCallback<UpdateRouterExplicit>(
-    (params, options) => updateRouterParam('replace', params, options),
-    [router]
+  const replaceRouteParams = useCallback<UpdateRouter>(
+    (params, options) => updateRouterParam("replace", params, options),
+    [updateRouterParam]
   );
 
-  const pushRouteParams = useCallback<UpdateRouterExplicit>(
-    (params, options) => updateRouterParam('push', params, options),
-    [router]
+  const pushRouteParams = useCallback<UpdateRouter>(
+    (params, options) => updateRouterParam("push", params, options),
+    [updateRouterParam]
   );
 
   return {
