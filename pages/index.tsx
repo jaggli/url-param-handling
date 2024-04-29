@@ -12,6 +12,7 @@ export default function Home() {
   return (
     <div>
       <h1>This is Home</h1>
+      <pre>Search: {JSON.stringify(document.location.search)}</pre>
       <RenderCounter>Home</RenderCounter>
       <pre>{JSON.stringify(urlParams, null, 2)}</pre>
       <br />

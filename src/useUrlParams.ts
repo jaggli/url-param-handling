@@ -42,7 +42,7 @@ export const useUrlParams = (): [NonNullableUrlParams, SetUrlParams] => {
     [pushRouteParams, replaceRouteParams, urlParams]
   );
 
-  return [urlParams, setValues] as const;
+  return [urlParams, setValues];
 };
 
 export const useUrlParam = (
