@@ -28,16 +28,19 @@ export const useUrlParams = (): [NonNullableUrlParams, SetUrlParams] => {
       if (!diff) {
         return;
       }
-      console.log("set value diff", filterUndefinedParams(params));
 
-      setUrlParams(filterUndefinedParams(params));
+      const filteredParams = filterUndefinedParams(params);
+
+      console.log("set value diff", filteredParams);
+
+      setUrlParams(filteredParams);
 
       const updateMethod = addHistoryEntry
         ? pushRouteParams
         : replaceRouteParams;
 
       // intentionally fire and forget (not awaiting the promise)
-      updateMethod(urlParams);
+      updateMethod(filteredParams);
     },
     [pushRouteParams, replaceRouteParams, urlParams]
   );
