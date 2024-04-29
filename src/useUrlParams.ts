@@ -33,7 +33,8 @@ export const useUrlParams = (): [NonNullableUrlParams, SetUrlParams] => {
 
       console.log("set value diff", filteredParams);
 
-      setUrlParams(filteredParams);
+      // update state
+      setUrlParams(() => filteredParams);
 
       const updateMethod = addHistoryEntry
         ? pushRouteParams
