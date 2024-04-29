@@ -1,18 +1,19 @@
-import { FakeLink } from '@/src/fakeLink';
-import Link from 'next/link';
-import { useRouter } from 'next/router';
-import { useRef } from 'react';
+import { LinkButtons } from "@/src/components/linkButtons";
+import { RenderCounter } from "@/src/components/renderCounter";
+import { useUrlParams } from "@/src/useUrlParams";
+import { GetServerSideProps } from "next";
+import Link from "next/link";
 
 export default function Home() {
-  const router = useRouter();
-  const lastRouter = useRef<typeof router>();
-  console.log(router);
+  const [urlParams] = useUrlParams();
+
+  console.log("render Home", urlParams);
 
   return (
     <div>
       <h1>This is Home</h1>
-      <pre>{router.asPath}</pre>
-      <pre>{JSON.stringify(router.query, null, 2)}</pre>
+      <RenderCounter>Home</RenderCounter>
+      <pre>{JSON.stringify(urlParams, null, 2)}</pre>
       <br />
       <Link href="/search?whatever=what&whatever=whatever&one=two&three=">
         search
@@ -22,7 +23,10 @@ export default function Home() {
       <Link href="/">home</Link>
       <br />
       <br />
-      <FakeLink />
+      <LinkButtons />
     </div>
   );
 }
+export const getServerSideProps = (async ({ resolvedUrl: path }) => ({
+  props: { path },
+})) satisfies GetServerSideProps<{ path: string }>;

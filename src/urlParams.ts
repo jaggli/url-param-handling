@@ -1,6 +1,7 @@
 export type UrlParam = string | string[] | undefined;
 export type UrlParams = Record<string, UrlParam>;
-export type NonNullableUrlParams = Record<string, Exclude<UrlParam, undefined>>;
+export type NonNullableUrlParam = Exclude<UrlParam, undefined>;
+export type NonNullableUrlParams = Record<string, NonNullableUrlParam>;
 
 /**
  * Get search params from a router path (e.g. router.asPath)
@@ -49,8 +50,8 @@ export const getUrlParams = (path: string) =>
  * ```
  */
 export const diffParams = (
-  paramsA: NonNullableUrlParams,
-  paramsB: UrlParams
+  paramsA: Readonly<NonNullableUrlParams>,
+  paramsB: Readonly<UrlParams>
 ) => {
   const diff: UrlParams = {};
   for (const key in paramsA) {

@@ -1,29 +1,59 @@
 import { useRouter } from "next/router";
-import { useRef, useState } from "react";
+import { useCallback, useRef, useState } from "react";
+
 import {
+  NonNullableUrlParam,
   NonNullableUrlParams,
   UrlParams,
   diffParams,
   filterUndefinedParams,
   getUrlParams,
 } from "./urlParams";
+import { useUpdateRouterParams } from "./useUpdateRouterParams";
 
-type SetUrlParams = (params: UrlParams, addHistoryEntry: boolean) => void;
+type SetUrlParams = (params: UrlParams, addHistoryEntry?: boolean) => void;
 
 export const useUrlParams = (): [NonNullableUrlParams, SetUrlParams] => {
   const { asPath: routerPath } = useRouter();
-  const urlParams = useRef<UrlParams>(getUrlParams(routerPath));
-  const cleanUrlParams = useRef<NonNullableUrlParams>(
-    filterUndefinedParams(urlParams.current)
+  const { pushRouteParams, replaceRouteParams } = useUpdateRouterParams();
+  const [urlParams, setUrlParams] = useState<NonNullableUrlParams>(
+    filterUndefinedParams(getUrlParams(routerPath))
   );
 
-  // manual render controll to update the urlParams
-  const [, setTick] = useState(0);
-  const triggerRender = () => setTick((tick) => tick + 1);
+  console.log("useUrlParams", urlParams, routerPath);
 
-  const setValues: SetUrlParams = (params, addHistoryEntry) => {
-    const diff = diffParams(cleanUrlParams.current, params);
+  const setValues: SetUrlParams = useCallback(
+    (params, addHistoryEntry) => {
+      const diff = diffParams(urlParams, params);
+      if (!diff) {
+        return;
+      }
+      console.log("set value diff", filterUndefinedParams(params));
+
+      setUrlParams(filterUndefinedParams(params));
+
+      const updateMethod = addHistoryEntry
+        ? pushRouteParams
+        : replaceRouteParams;
+
+      // intentionally fire and forget (not awaiting the promise)
+      updateMethod(urlParams);
+    },
+    [pushRouteParams, replaceRouteParams, urlParams]
+  );
+
+  return [urlParams, setValues] as const;
+};
+
+export const useUrlParam = (
+  paramName: string
+): [NonNullableUrlParam, (value: string) => void] => {
+  const [urlParams, setUrlParams] = useUrlParams();
+
+  const value = urlParams[paramName] || "";
+  const setValue = (newValue: string, addHistoryEntry?: boolean) => {
+    setUrlParams({ ...urlParams, [paramName]: newValue }, addHistoryEntry);
   };
 
-  return [cleanUrlParams.current, setValues] as const;
+  return [value, setValue];
 };
