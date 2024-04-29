@@ -10,7 +10,6 @@ export default function Search() {
   return (
     <div>
       <h1>This is Search</h1>
-      <pre>Search: {JSON.stringify(document.location.search)}</pre>
       <RenderCounter>Search</RenderCounter>
       <pre>{JSON.stringify(urlParams, null, 2)}</pre>
       <br />

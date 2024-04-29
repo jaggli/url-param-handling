@@ -25,14 +25,7 @@ export const useUpdateRouterParams = () => {
 
   const updateRouterParam = useCallback<UpdateRouterInternal>(
     (routerMethod, params, options = {}) => {
-      const currentParams = getUrlParams(router.asPath);
-
-      // if there is no difference between the current params and the new params
-      // we don't need to update the router
-      if (!diffParams(currentParams, params)) {
-        return Promise.resolve(false);
-      }
-
+    console.log("Test", routerMethod, params)
       // execute the router method with the new params
       return router[routerMethod]({ query: params }, undefined, {
         shallow: !options.nonShallow,
